@@ -233,6 +233,311 @@
     .vote-btn > span { position: relative; z-index: 1; }
     .shake-btn { width: 100%; margin-top: 8px; background: var(--card); border: 2px dashed var(--line); border-radius: 8px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; color: var(--ink); }
     .shake-btn.on { border-style: solid; border-color: var(--accent); background: rgba(132,224,0,0.12); }
+
+    /* Dashboard skin inspired by the reference UI */
+    :root {
+      --paper: #aeb3a3;
+      --surface: #eaecdf;
+      --ink: #000000;
+      --ink-faint: #63665b;
+      --line: #d8dbc9;
+      --card: #f6f7f7;
+      --accent: #c6ef4e;
+      --accent-ink: #000000;
+      --accent-dark: #5f7f17;
+      --r-sm: 16px;
+      --r-md: 18px;
+      --r-lg: 22px;
+      --font-sans: "Atyp Display", "Space Grotesk", "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+    }
+    html, body {
+      background: #aeb3a3;
+      color: #000;
+      font-family: var(--font-sans);
+      letter-spacing: 0;
+    }
+    body {
+      position: relative;
+      min-height: 100%;
+      isolation: isolate;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(135deg, transparent 0 58%, rgba(198, 239, 78, 0.32) 58% 70%, transparent 70%),
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.035) 0 1px, transparent 1px 22px),
+        repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.035) 0 1px, transparent 1px 22px);
+    }
+    .container {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 460px);
+      min-height: 100%;
+      height: auto;
+      margin: 0 auto;
+      padding: 18px;
+      gap: 12px;
+      background: rgba(234, 236, 223, 0.78);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(12px) saturate(1.05);
+    }
+    .app-head {
+      padding: 12px;
+      border: 1px solid rgba(246, 247, 247, 0.78);
+      border-radius: 24px;
+      background: rgba(246, 247, 247, 0.72);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.08);
+    }
+    .app-head .app-mark {
+      position: relative;
+      border-radius: 16px;
+      background: #000;
+      color: transparent;
+      transform: none;
+      box-shadow: none;
+    }
+    .app-head .app-mark::before {
+      content: "";
+      width: 20px;
+      height: 20px;
+      border: 3px solid var(--accent);
+      border-left-color: transparent;
+      border-radius: 50%;
+    }
+    .app-head .app-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #000;
+      letter-spacing: 0;
+    }
+    .app-head .app-sub {
+      color: var(--ink-faint);
+      letter-spacing: 0;
+      text-transform: none;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .slide-info {
+      margin: 0;
+      padding: 12px;
+      border: 1px solid rgba(246, 247, 247, 0.72);
+      border-radius: 22px;
+      background: rgba(246, 247, 247, 0.64);
+      color: var(--ink-faint);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.06);
+      letter-spacing: 0;
+    }
+    .progress-bar {
+      height: 7px;
+      gap: 5px;
+      margin-bottom: 10px;
+    }
+    .progress-dot {
+      height: 7px;
+      border-radius: 999px;
+      background: #dfe2d5;
+    }
+    .progress-dot.active {
+      background: #c6ef4e;
+      box-shadow: 0 0 0 3px rgba(198, 239, 78, 0.25);
+    }
+    .online-badge {
+      margin-top: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #000;
+      color: #f6f7f7;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0;
+    }
+    .online-badge .dot {
+      background: #c6ef4e;
+    }
+    .card {
+      padding: 16px;
+      border: 1px solid #dfe2d5;
+      border-radius: 22px;
+      background: #f6f7f7;
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.08);
+    }
+    .card:has(.emoji-row) {
+      background: #c6ef4e;
+      border-color: rgba(0, 0, 0, 0.08);
+      box-shadow: 0 18px 38px rgba(87, 113, 22, 0.2);
+    }
+    h2 {
+      margin: 0 0 13px;
+      font-size: 20px;
+      line-height: 1.15;
+      font-weight: 900;
+      color: #000;
+      letter-spacing: 0;
+    }
+    h2::before {
+      width: 10px;
+      height: 10px;
+      min-width: 10px;
+      border-radius: 50%;
+      background: #c6ef4e;
+      transform: none;
+      box-shadow: 0 0 0 4px rgba(198, 239, 78, 0.24);
+    }
+    .card:has(.emoji-row) h2::before {
+      background: #000;
+      box-shadow: none;
+    }
+    .button-group {
+      gap: 9px;
+    }
+    button {
+      border: 1px solid #dfe2d5;
+      border-radius: 18px;
+      background: #fff;
+      color: #000;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+    button:active {
+      background: #c6ef4e;
+      border-color: #c6ef4e;
+      color: #000;
+      transform: scale(0.985);
+    }
+    .vote-btn {
+      min-height: 62px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      border-radius: 18px;
+      font-size: 16px;
+      line-height: 1.24;
+    }
+    .vote-btn > span:first-of-type {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+    }
+    .vote-btn.lead {
+      border-color: #c6ef4e;
+      box-shadow: 0 10px 22px rgba(198, 239, 78, 0.22);
+    }
+    .vote-key {
+      width: 30px;
+      height: 30px;
+      min-width: 30px;
+      border-radius: 10px;
+      background: #000;
+      color: #fff;
+      font-size: 13px;
+    }
+    .vote-btn.lead .vote-key,
+    .vote-btn.lead .vote-count {
+      background: #c6ef4e;
+      color: #000;
+    }
+    .vote-count {
+      background: #000;
+      color: #f6f7f7;
+      border-radius: 999px;
+      padding: 6px 11px;
+    }
+    .vote-fill {
+      background: linear-gradient(90deg, rgba(198, 239, 78, 0.22), rgba(198, 239, 78, 0.48));
+    }
+    .emoji-row {
+      gap: 7px;
+    }
+    .emoji-btn {
+      min-height: 54px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.84);
+      box-shadow: none;
+    }
+    .shake-btn {
+      margin-top: 9px;
+      border: 0;
+      border-radius: 999px;
+      background: #000;
+      color: #fff;
+      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.18);
+    }
+    .shake-btn.on {
+      background: #fff;
+      color: #000;
+      border: 0;
+    }
+    textarea {
+      height: 86px;
+      border: 1px solid #dfe2d5;
+      border-radius: 18px;
+      background: #fff;
+      color: #000;
+      font-size: 15px;
+      line-height: 1.45;
+      margin-bottom: 9px;
+      outline: none;
+    }
+    textarea:focus {
+      border-color: #c6ef4e;
+      box-shadow: 0 0 0 4px rgba(198, 239, 78, 0.22);
+    }
+    .submit-btn {
+      min-height: 50px;
+      border: 0;
+      border-radius: 999px;
+      background: #000;
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
+    }
+    .submit-btn:active {
+      background: #c6ef4e;
+      color: #000;
+    }
+    .timer-section {
+      border: 0;
+      border-radius: 20px;
+      background: #000;
+      box-shadow: inset 0 0 0 1px rgba(246, 247, 247, 0.14);
+    }
+    .timer-display {
+      color: #c6ef4e;
+      letter-spacing: 0;
+    }
+    .timer-label {
+      color: #f6f7f7;
+      letter-spacing: 0;
+    }
+    .toast {
+      border-radius: 999px;
+      background: #000;
+      color: #fff;
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+    }
+    @media (min-width: 520px) {
+      .container {
+        min-height: calc(100% - 36px);
+        margin: 18px auto;
+        border: 1px solid rgba(246, 247, 247, 0.78);
+        border-radius: 34px;
+      }
+    }
+    @media (max-width: 480px) {
+      .container { padding: 12px; gap: 10px; }
+      .card { padding: 14px; }
+      h2 { font-size: 18px; }
+      button { padding: 13px; }
+    }
   </style>
 </head>
 <body>
@@ -491,8 +796,9 @@
         dot.className = `progress-dot ${i === currentSlide ? "active" : ""}`;
         bar.appendChild(dot);
       }
-      const human = deckInfo && deckInfo.num ? deckInfo.num : currentSlide + 1;
-      counter.textContent = `第 ${human} 頁 · 進度 ${Math.min(currentSlide + 1, totalSlides)}/${totalSlides}`;
+      const num = (deckInfo && deckInfo.num != null) ? deckInfo.num : (currentSlide + 1);
+      const human = (typeof num === "number") ? `第 ${num} 頁` : num;
+      counter.textContent = `${human} · 進度 ${Math.min(currentSlide + 1, totalSlides)}/${totalSlides}`;
     }
 
     function initEmojiButtons() {
