@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>互動簡報遙控器</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --paper: #e9e8e3;
+      --ink: #15140f;
+      --ink-faint: #8b897f;
+      --line: #d6d4cc;
+      --card: #ffffff;
+      --accent: #84e000;
+      --accent-ink: #16230a;
+      --accent-dark: #5fa600;
+      --kraft: #b98a5b;
+      --r-sm: 10px; --r-md: 14px; --r-lg: 20px;
+      --font-sans: "Space Grotesk", "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", system-ui, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(132,224,0,0.10), transparent 42%),
+        radial-gradient(circle at 100% 100%, rgba(185,138,91,0.10), transparent 44%),
+        var(--paper);
+      color: var(--ink);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+    }
+    .app-head { display: flex; align-items: center; gap: 11px; padding: 2px 2px 0; }
+    .app-head .app-mark { width: 34px; height: 34px; min-width: 34px; border-radius: 9px; background: var(--ink); color: var(--accent); display: grid; place-items: center; font-size: 19px; font-weight: 800; transform: rotate(-5deg); box-shadow: 0 4px 12px rgba(21,20,15,0.18); }
+    .app-head .app-title { font-weight: 700; font-size: 17px; line-height: 1.1; }
+    .app-head .app-sub { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); margin-top: 2px; }
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      padding: 16px;
+      gap: 16px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    .progress-bar {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .progress-dot {
+      flex: 1;
+      height: 4px;
+      background: var(--line);
+      border-radius: 2px;
+      transition: background 0.3s ease;
+    }
+    .progress-dot.active {
+      background: var(--accent);
+    }
+    .slide-info {
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: var(--ink-faint);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    h2 { margin: 0 0 14px 0; font-size: 19px; font-weight: 800; letter-spacing: -0.01em; display: flex; align-items: center; gap: 9px; }
+    h2::before { content: ""; width: 11px; height: 11px; min-width: 11px; border-radius: 3px; background: var(--accent); transform: rotate(8deg); }
+    .card {
+      background: var(--card);
+      padding: 18px;
+      border-radius: var(--r-lg);
+      border: 1px solid var(--line);
+      box-shadow: 0 8px 24px rgba(21,20,15,0.06);
+      flex-shrink: 0;
+    }
+    .button-group {
+      display: grid;
+      gap: 8px;
+    }
+    button {
+      font-family: var(--font-sans);
+      padding: 15px;
+      font-size: 15px;
+      font-weight: 700;
+      border: 1.5px solid var(--line);
+      border-radius: var(--r-sm);
+      background: var(--card);
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform 0.12s ease, border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    button:active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-ink);
+      transform: scale(0.98);
+    }
+    .vote-btn {
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      min-height: 56px;
+      font-size: 16px;
+    }
+    .vote-btn.lead { border-color: var(--accent); }
+    .vote-key { display: inline-grid; place-items: center; width: 26px; height: 26px; min-width: 26px; border-radius: 7px; background: var(--ink); color: #fff; font-family: var(--font-mono); font-size: 13px; font-weight: 700; margin-right: 10px; }
+    .vote-btn.lead .vote-key { background: var(--accent); color: var(--accent-ink); }
+    .vote-count {
+      position: relative;
+      z-index: 1;
+      background: var(--ink);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      min-width: 36px;
+      text-align: center;
+    }
+    .vote-btn.lead .vote-count { background: var(--accent); color: var(--accent-ink); }
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 15px;
+      margin-bottom: 8px;
+      resize: none;
+      height: 70px;
+      font-family: inherit;
+    }
+    .submit-btn {
+      background: var(--ink);
+      color: white;
+      border-color: var(--ink);
+      width: 100%;
+      margin: 0;
+    }
+    .submit-btn:active {
+      color: white;
+      background: var(--accent-dark);
+      border-color: var(--accent-dark);
+    }
+    .emoji-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      margin-bottom: 0;
+    }
+    .emoji-btn {
+      padding: 12px 8px;
+      font-size: 24px;
+      border: 1.5px solid var(--line);
+      background: var(--card);
+      cursor: pointer;
+      border-radius: var(--r-sm);
+      transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+    .emoji-btn:active {
+      transform: scale(1.25);
+      background: rgba(132,224,0,0.18);
+      border-color: var(--accent);
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      animation: toastIn 0.3s ease forwards;
+      z-index: 1000;
+    }
+    @keyframes toastIn {
+      0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .timer-section {
+      background: var(--ink);
+      border: 1.5px solid var(--ink);
+      border-radius: var(--r-md);
+      padding: 16px;
+      text-align: center;
+      color: #fff;
+    }
+    .timer-display {
+      font-size: 40px;
+      font-weight: 600;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+    }
+    .timer-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-top: 6px;
+    }
+    @media (max-width: 480px) {
+      .container { padding: 12px; gap: 12px; }
+      .card { padding: 12px; }
+      h2 { font-size: 16px; margin-bottom: 10px; }
+      button { padding: 12px; font-size: 14px; }
+    }
+
+    /* ── 在線狀態 / 彩帶 / 搖一搖 / 投票長條 ── */
+    .online-badge { display: inline-flex; align-items: center; gap: 6px; justify-content: center; font-size: 12px; color: var(--accent-dark); font-weight: 700; margin-top: 6px; }
+    .online-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); animation: pulseDot 1.8s infinite; }
+    @keyframes pulseDot { 0% { box-shadow: 0 0 0 0 rgba(132,224,0,0.55); } 70% { box-shadow: 0 0 0 8px rgba(132,224,0,0); } 100% { box-shadow: 0 0 0 0 rgba(132,224,0,0); } }
+    .confetti-piece { position: fixed; top: -16px; width: 9px; height: 14px; border-radius: 2px; z-index: 1500; pointer-events: none; animation: confFall linear forwards; }
+    @keyframes confFall { to { transform: translateY(112vh) translateX(var(--cx, 0px)) rotate(var(--cr, 720deg)); opacity: 0.9; } }
+    .vote-fill { position: absolute; inset: 0 auto 0 0; background: rgba(132,224,0,0.22); width: 0; transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1); z-index: 0; pointer-events: none; }
+    .vote-btn > span { position: relative; z-index: 1; }
+    .shake-btn { width: 100%; margin-top: 8px; background: var(--card); border: 2px dashed var(--line); border-radius: 8px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; color: var(--ink); }
+    .shake-btn.on { border-style: solid; border-color: var(--accent); background: rgba(132,224,0,0.12); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="app-head">
+      <span class="app-mark">▢</span>
+      <div><div class="app-title">互動簡報</div><div class="app-sub">福利與關懷設計 · 觀眾互動</div></div>
+    </div>
+    <div class="slide-info">
+      <div class="progress-bar" id="progressBar"></div>
+      <div id="slideCounter">讀取中...</div>
+      <div class="online-badge"><span class="dot"></span><span><span id="onlineCount">0</span> 人同時在線</span></div>
+    </div>
+
+    <div class="card" id="timerCard" style="display: none;">
+      <div class="timer-section">
+        <div id="timerDisplay" class="timer-display">00:00</div>
+        <div class="timer-label" id="timerLabel">等待講者啟動</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>投票 - 你的選擇是？</h2>
+      <div class="button-group" id="voteButtons"></div>
+    </div>
+
+    <div class="card">
+      <h2>最喜歡哪個提案？</h2>
+      <div class="button-group" id="propButtons"></div>
+    </div>
+
+    <div class="card">
+      <h2>表達反應 😊</h2>
+      <div class="emoji-row" id="emojiRow"></div>
+      <button class="shake-btn" id="shakeBtn">📱 開啟搖一搖送 🎉</button>
+    </div>
+
+    <div class="card">
+      <h2>提問區</h2>
+      <textarea id="qInput" placeholder="有什麼問題想問講者嗎？"></textarea>
+      <button class="submit-btn" onclick="sendQuestion()">送出問題</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, runTransaction, push, set, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC3TvI14lL3LiI3LZB3g9iJmMETGW-8VSc",
+      authDomain: "final-present-36856.firebaseapp.com",
+      databaseURL: "https://final-present-36856-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "final-present-36856",
+      storageBucket: "final-present-36856.firebasestorage.app",
+      messagingSenderId: "779664206602",
+      appId: "1:779664206602:web:7aca924f656d5581b9e8f3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // ── 在線狀態（presence）──
+    const presenceRef = push(ref(db, 'presence'));
+    set(presenceRef, true);
+    onDisconnect(presenceRef).remove();
+    window.addEventListener("pagehide", () => { try { remove(presenceRef); } catch (e) {} });
+    onValue(ref(db, 'presence'), (snapshot) => {
+      const data = snapshot.val();
+      const el = document.getElementById("onlineCount");
+      if (el) el.textContent = data ? Object.keys(data).length : 0;
+    });
+
+    const VOTE_OPTIONS = [
+      { label: "拆平回收 (主路徑)", color: "#ff914d" },
+      { label: "留箱再利用", color: "#84e000" },
+      { label: "先放一旁", color: "#008fd3" }
+    ];
+
+    const EMOJIS = ["👍", "❤️", "😂", "🎉", "💭"];
+
+    const PROP_OPTIONS = [
+      { label: "標籤殘膠去除" },
+      { label: "收納玄關櫃 ハコノマ" },
+      { label: "彌封＋抽獎回收" }
+    ];
+
+    let pollData = { 0: 0, 1: 0, 2: 0 };
+    let propData = { 0: 0, 1: 0, 2: 0 };
+    let timerState = { remaining: 0, label: "", running: false };
+    let currentSlide = 0;
+    let totalSlides = 28;
+    let deckInfo = null;
+
+    // 監聽投票數據
+    onValue(ref(db, 'poll'), (snapshot) => {
+      pollData = snapshot.val() || { 0: 0, 1: 0, 2: 0 };
+      renderVoteButtons();
+    });
+
+    // 監聽提案票選
+    onValue(ref(db, 'prop'), (snapshot) => {
+      propData = snapshot.val() || { 0: 0, 1: 0, 2: 0 };
+      renderPropButtons();
+    });
+
+    // 監聽計時器狀態
+    let prevRemaining = 0, timeUpHideTimer = null;
+    onValue(ref(db, 'timer'), (snapshot) => {
+      timerState = snapshot.val() || { remaining: 0, label: "", running: false };
+      updateTimerDisplay();
+      const card = document.getElementById("timerCard");
+      if (timerState.remaining > 0) {
+        clearTimeout(timeUpHideTimer);
+        card.style.display = "block";
+      } else if (prevRemaining > 0) {
+        // 剛歸零：顯示「時間到」幾秒再收起
+        document.getElementById("timerDisplay").textContent = "00:00";
+        document.getElementById("timerLabel").textContent = "⏰ 時間到！";
+        card.style.display = "block";
+        confettiBurst(26); vibrate([30, 50, 30]);
+        clearTimeout(timeUpHideTimer);
+        timeUpHideTimer = setTimeout(() => { card.style.display = "none"; }, 4000);
+      } else {
+        card.style.display = "none";
+      }
+      prevRemaining = timerState.remaining;
+    });
+
+    // 監聽幻燈片狀態
+    onValue(ref(db, 'currentSlide'), (snapshot) => {
+      const data = snapshot.val() || 0;
+      currentSlide = data;
+      updateProgressBar();
+    });
+
+    // 監聽完整頁面資訊（與講者真實頁碼/總數同步）
+    onValue(ref(db, 'deckInfo'), (snapshot) => {
+      const info = snapshot.val();
+      if (!info) return;
+      deckInfo = info;
+      if (typeof info.total === "number") totalSlides = info.total;
+      if (typeof info.pos === "number") currentSlide = info.pos - 1;
+      updateProgressBar();
+    });
+
+    function showToast(message) {
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+    }
+
+    function renderVoteButtons() {
+      const container = document.getElementById("voteButtons");
+      container.innerHTML = "";
+      const total = Object.values(pollData).reduce((a, b) => a + b, 0) || 1;
+
+      const maxCount = Math.max(0, ...VOTE_OPTIONS.map((_, i) => pollData[i] || 0));
+      VOTE_OPTIONS.forEach((option, i) => {
+        const btn = document.createElement("button");
+        btn.className = "vote-btn";
+        const count = pollData[i] || 0;
+        const percent = Math.round((count / total) * 100);
+        if (count > 0 && count === maxCount) btn.classList.add("lead");
+        btn.innerHTML = `<div class="vote-fill" style="width:${percent}%"></div><span><span class="vote-key">${String.fromCharCode(65 + i)}</span>${option.label}</span><span class="vote-count">${count}</span>`;
+        btn.onclick = () => submitVote(i);
+        container.appendChild(btn);
+      });
+    }
+
+    function submitVote(index) {
+      const voteRef = ref(db, `poll/${index}`);
+      runTransaction(voteRef, (current) => (current || 0) + 1).then(() => {
+        showToast("✓ 投票成功！");
+        confettiBurst(22); vibrate(30);
+      }).catch(() => {
+        showToast("✗ 投票失敗，請重試");
+      });
+    }
+
+    function renderPropButtons() {
+      const container = document.getElementById("propButtons");
+      if (!container) return;
+      container.innerHTML = "";
+      const total = PROP_OPTIONS.reduce((a, _, i) => a + (propData[i] || 0), 0) || 1;
+      const maxCount = Math.max(0, ...PROP_OPTIONS.map((_, i) => propData[i] || 0));
+      PROP_OPTIONS.forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.className = "vote-btn";
+        const count = propData[i] || 0;
+        const percent = Math.round((count / total) * 100);
+        if (count > 0 && count === maxCount) btn.classList.add("lead");
+        btn.innerHTML = `<div class="vote-fill" style="width:${percent}%"></div><span><span class="vote-key">${i + 1}</span>${opt.label}</span><span class="vote-count">${count}</span>`;
+        btn.onclick = () => submitProp(i);
+        container.appendChild(btn);
+      });
+    }
+
+    function submitProp(index) {
+      const propRef = ref(db, `prop/${index}`);
+      runTransaction(propRef, (current) => (current || 0) + 1).then(() => {
+        showToast("✓ 已投給提案 " + (index + 1));
+        confettiBurst(22); vibrate(30);
+      }).catch(() => {
+        showToast("✗ 投票失敗，請重試");
+      });
+    }
+
+    function sendQuestion() {
+      const input = document.getElementById("qInput");
+      if (!input.value.trim()) {
+        showToast("請輸入問題");
+        return;
+      }
+
+      const qRef = ref(db, 'questions');
+      push(qRef, {
+        text: input.value,
+        timestamp: Date.now()
+      }).then(() => {
+        input.value = "";
+        showToast("✓ 問題已送出！");
+        confettiBurst(30); vibrate(40);
+      }).catch(() => {
+        showToast("✗ 送出失敗，請重試");
+      });
+    }
+
+    function submitEmoji(emoji) {
+      const reactRef = ref(db, 'reactions');
+      push(reactRef, {
+        emoji,
+        timestamp: Date.now()
+      }).then(() => {
+        showToast(emoji);
+        vibrate(20);
+      });
+    }
+
+    function updateTimerDisplay() {
+      const display = document.getElementById("timerDisplay");
+      const label = document.getElementById("timerLabel");
+      const mins = Math.floor(timerState.remaining / 60);
+      const secs = timerState.remaining % 60;
+      display.textContent = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+      label.textContent = timerState.label || "倒計時進行中...";
+    }
+
+    function updateProgressBar() {
+      const bar = document.getElementById("progressBar");
+      const counter = document.getElementById("slideCounter");
+      bar.innerHTML = "";
+      for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement("div");
+        dot.className = `progress-dot ${i === currentSlide ? "active" : ""}`;
+        bar.appendChild(dot);
+      }
+      const human = deckInfo && deckInfo.num ? deckInfo.num : currentSlide + 1;
+      counter.textContent = `第 ${human} 頁 · 進度 ${Math.min(currentSlide + 1, totalSlides)}/${totalSlides}`;
+    }
+
+    function initEmojiButtons() {
+      const row = document.getElementById("emojiRow");
+      EMOJIS.forEach((emoji) => {
+        const btn = document.createElement("button");
+        btn.className = "emoji-btn";
+        btn.textContent = emoji;
+        btn.onclick = () => submitEmoji(emoji);
+        row.appendChild(btn);
+      });
+    }
+
+    // ── 彩帶 + 震動 ──
+    function vibrate(pattern) { if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} } }
+    function confettiBurst(count) {
+      const colors = ["#84e000", "#ff914d", "#008fd3", "#ff3030", "#ffd23f"];
+      for (let i = 0; i < (count || 24); i++) {
+        const p = document.createElement("div");
+        p.className = "confetti-piece";
+        p.style.left = (Math.random() * 100) + "vw";
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.setProperty("--cx", (Math.random() * 120 - 60) + "px");
+        p.style.setProperty("--cr", (Math.random() * 900 - 450) + "deg");
+        p.style.animationDuration = (1.6 + Math.random() * 1.4) + "s";
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 3200);
+      }
+    }
+
+    // ── 搖一搖送 🎉（手機彩蛋）──
+    let shakeOn = false, lastShake = 0;
+    function onMotion(e) {
+      const a = e.accelerationIncludingGravity; if (!a) return;
+      const mag = Math.abs(a.x || 0) + Math.abs(a.y || 0) + Math.abs(a.z || 0);
+      const now = Date.now();
+      if (mag > 32 && now - lastShake > 1200) {
+        lastShake = now;
+        submitEmoji("🎉"); confettiBurst(30); vibrate([20, 40, 20]);
+      }
+    }
+    function enableShake() {
+      const btn = document.getElementById("shakeBtn");
+      const start = () => {
+        window.addEventListener("devicemotion", onMotion);
+        shakeOn = true; btn.classList.add("on"); btn.textContent = "📱 搖一搖已開啟（搖手機試試）";
+      };
+      if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
+        DeviceMotionEvent.requestPermission().then((res) => {
+          if (res === "granted") start(); else showToast("需要動作權限才能用搖一搖");
+        }).catch(() => showToast("此裝置不支援搖一搖"));
+      } else if (typeof DeviceMotionEvent !== "undefined") {
+        start();
+      } else {
+        showToast("此裝置不支援搖一搖");
+      }
+    }
+    document.getElementById("shakeBtn").addEventListener("click", () => { if (!shakeOn) enableShake(); });
+
+    // 綁定全域函式
+    window.sendQuestion = sendQuestion;
+    window.vote = submitVote;
+
+    // 初始化
+    initEmojiButtons();
+    renderPropButtons();
+    updateProgressBar();
+    updateTimerDisplay();
+  </script>
+</body>
+</html>
