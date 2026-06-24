@@ -246,6 +246,17 @@
     .results-board .rb-votes { font-family: var(--font-mono); font-size: 16px; color: #7c7f73; }
     .results-board .rb-row.lead .rb-votes { color: #41511c; }
     .results-board .rb-coltotal { font-family: var(--font-mono); font-size: 16px; color: #9a9c90; margin-top: auto; padding-top: 8px; }
+    .results-board .rb-questions { margin-top: 22px; background: #ffffff; border-radius: 22px; padding: 22px 26px 24px; box-shadow: 0 10px 28px rgba(17,17,17,0.05); display: grid; gap: 14px; }
+    .results-board .rb-qhead { display: flex; align-items: baseline; justify-content: space-between; gap: 18px; }
+    .results-board .rb-qtitle { margin: 0; font-size: 28px; font-weight: 800; color: #111; }
+    .results-board .rb-qcount { font-family: var(--font-mono); font-size: 16px; color: #7c7f73; white-space: nowrap; }
+    .results-board .rb-qlist { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 14px; min-height: 116px; }
+    .results-board .rb-question { min-width: 0; border-radius: 18px; background: #f6f7f7; padding: 18px 20px; display: grid; align-content: start; gap: 9px; border: 1px solid #eceee8; }
+    .results-board .rb-question.latest { background: #111; color: #ffffff; border-color: #111; }
+    .results-board .rb-qmeta { font-family: var(--font-mono); font-size: 14px; color: #7c7f73; }
+    .results-board .rb-question.latest .rb-qmeta { color: #c6ef4e; }
+    .results-board .rb-qtext { font-size: 23px; line-height: 1.25; font-weight: 700; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+    .results-board .rb-qempty { grid-column: 1 / -1; min-height: 116px; display: grid; place-items: center; border-radius: 18px; background: #f6f7f7; color: #7c7f73; font-size: 22px; font-weight: 700; }
     .results-board .rb-foot { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 24px; }
     .results-board .rb-stat { background: #ffffff; border-radius: 22px; padding: 18px 24px; font-size: 18px; color: #7c7f73; font-weight: 600; box-shadow: 0 10px 28px rgba(17,17,17,0.05); display: flex; align-items: baseline; gap: 10px; }
     .results-board .rb-stat b { font-family: var(--font-sans); font-size: 36px; color: #111; font-weight: 800; }
@@ -508,10 +519,15 @@
     const firebaseApp = initializeApp(firebaseConfig);
     const db = getDatabase(firebaseApp);
 
-    const SLIDE_NUMBERS = [1, 2, 3, 4, 5, 6, 9, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32];
+    const SLIDE_NUMBERS = [1, 2, 3, 4, 5, 6, 9, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33];
+    const RESULTS_SLIDE_NUM = 34;
+    const SLIDE_TITLES = {
+      33: "總結與反思",
+      34: "投票結果 / 觀眾提問"
+    };
 
     const PLACEHOLDERS = {
-      1: [{ key: "QR.jpg", x: 1332, y: 574, w: 446, h: 426 }],
+      1: [{ key: "qrcode.png", x: 1332, y: 574, w: 446, h: 426 }],
       2: [{ key: "P1p4", x: 1206, y: 68, w: 656, h: 946 }, { key: "P1p1", x: 108, y: 320, w: 814, h: 366 }, { key: "P1p2", x: 104, y: 706, w: 366, h: 224 }, { key: "P1p3", x: 506, y: 706, w: 416, h: 224 }],
       3: [{ key: "P2p3", x: 1300, y: 194, w: 568, h: 738 }, { key: "P2p1", x: 126, y: 424, w: 434, h: 614 }, { key: "P2p2", x: 744, y: 476, w: 520, h: 456 }],
       15: [{ key: "P11p1", x: 1102, y: 0, w: 818, h: 324 }, { key: "P11p2", x: 1102, y: 340, w: 818, h: 376 }, { key: "P11p3", x: 1102, y: 732, w: 818, h: 348 }],
@@ -525,6 +541,20 @@
       28: [{ key: "P28p1", x: 0, y: 218, w: 1208, h: 862 }, { key: "P28p2", x: 1117, y: 0, w: 803, h: 638 }],
       29: [{ key: "P29p1", x: 40, y: 76, w: 696, h: 930 }, { key: "P29p2", x: 804, y: 76, w: 514, h: 652 }, { key: "P29p3", x: 1366, y: 76, w: 514, h: 652 }],
       32: [{ key: "P33p1", x: 108, y: 202, w: 1438, h: 782 }]
+    };
+
+    const PART_ASSET_EXTENSIONS = {
+      P1p1: "png", P1p2: "jpg", P1p3: "png", P1p4: "png",
+      P2p1: "png", P2p2: "png", P2p3: "png",
+      P11p1: "png", P11p2: "png", P11p3: "png", P12p1: "png",
+      P21p1: "png", P21p2: "png", P21p3: "png",
+      P22p1: "png", P22p2: "png", P23p1: "png",
+      P24p1: "png", P24p2: "png", P24p3: "png", P24p4: "png",
+      P25p1: "png", P26p2: "png",
+      P27p1: "png", P27p2: "png",
+      P28p1: "png", P28p2: "png",
+      P29p1: "png", P29p2: "png", P29p3: "png",
+      P33p1: "png"
     };
 
     const SHAPES = {
@@ -619,6 +649,8 @@
         { label: "先放一旁", votes: 0 }
       ]
     };
+    const DEFAULT_QUESTION_TEXT = "台下觀眾的問題會顯示在這裡";
+    const questionState = { items: [] };
 
     // 監聽 Firebase 投票數據
     onValue(ref(db, 'poll'), (snapshot) => {
@@ -633,13 +665,11 @@
 
     // 監聽 Firebase 觀眾問答
     onValue(ref(db, 'questions'), (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const keys = Object.keys(data);
-        const latestQuestion = data[keys[keys.length - 1]].text;
-        document.getElementById("questionCard").textContent = latestQuestion;
-        document.getElementById("questionText").value = latestQuestion;
-      }
+      questionState.items = normalizeQuestions(snapshot.val());
+      const latestQuestion = questionState.items[0]?.text || DEFAULT_QUESTION_TEXT;
+      document.getElementById("questionCard").textContent = latestQuestion;
+      document.getElementById("questionText").value = latestQuestion;
+      updateResults();
     });
 
     // ── 即時狀態：在線觀眾人數 ──
@@ -776,6 +806,7 @@
       propState.options[1].votes = d[1] || 0;
       propState.options[2].votes = d[2] || 0;
       renderPropPoll();
+      updateResults();
       const tot = propState.options.reduce((s, o) => s + o.votes, 0);
       const m = Math.floor(tot / 10);
       if (propMilestone === null) propMilestone = m;
@@ -927,12 +958,56 @@
           ${col("poll", "🗳 " + pollTitle, propPollSafe(pollState), false)}
           ${col("prop", "🏆 最喜歡的提案", propPollSafe(propState), true)}
         </div>
+        <section class="rb-questions" aria-live="polite">
+          <div class="rb-qhead">
+            <h2 class="rb-qtitle">觀眾提問</h2>
+            <span id="rbQCount" class="rb-qcount">0 則提問</span>
+          </div>
+          <div id="rbQuestionList" class="rb-qlist"></div>
+        </section>
         <div class="rb-foot">
           <span class="rb-stat"><b id="rbOnline">0</b> 人在線</span>
           <span class="rb-stat"><b id="rbVotes">0</b> 張總票數</span>
           <span class="rb-stat"><b id="rbReacts">0</b> 個互動反應</span>
         </div>`;
       updateResults();
+    }
+    function normalizeQuestions(data) {
+      return Object.entries(data || {})
+        .map(([key, item]) => ({
+          key,
+          text: String(item?.text || "").trim(),
+          timestamp: Number(item?.timestamp) || 0
+        }))
+        .filter((item) => item.text)
+        .sort((a, b) => (b.timestamp - a.timestamp) || b.key.localeCompare(a.key));
+    }
+    function renderResultQuestions() {
+      const list = document.getElementById("rbQuestionList");
+      if (!list) return;
+      const count = document.getElementById("rbQCount");
+      if (count) count.textContent = `${questionState.items.length} 則提問`;
+      list.innerHTML = "";
+      const questions = questionState.items.slice(0, 3);
+      if (!questions.length) {
+        const empty = document.createElement("div");
+        empty.className = "rb-qempty";
+        empty.textContent = "目前還沒有觀眾提問";
+        list.appendChild(empty);
+        return;
+      }
+      questions.forEach((question, index) => {
+        const item = document.createElement("article");
+        item.className = `rb-question${index === 0 ? " latest" : ""}`;
+        const meta = document.createElement("span");
+        meta.className = "rb-qmeta";
+        meta.textContent = index === 0 ? "最新提問" : `提問 ${index + 1}`;
+        const text = document.createElement("div");
+        text.className = "rb-qtext";
+        text.textContent = question.text;
+        item.append(meta, text);
+        list.appendChild(item);
+      });
     }
     function propPollSafe(state) { return (state && state.options) ? state.options : []; }
     function updateResults() {
@@ -958,6 +1033,7 @@
       const on = document.getElementById("rbOnline"); if (on) on.textContent = lastOnline;
       const vv = document.getElementById("rbVotes"); if (vv) vv.textContent = pt + rt;
       const rr = document.getElementById("rbReacts"); if (rr) rr.textContent = sessionReactions;
+      renderResultQuestions();
     }
     function animateResultsIn() {
       const board = document.getElementById("resultsBoard");
@@ -974,7 +1050,8 @@
       { n: "04", title: "問卷設計", num: 14 },
       { n: "05", title: "問卷分析結果", num: 15 },
       { n: "06", title: "我們的觀點 - 三個提案", num: 19 },
-      { n: "07", title: "投票結果 / Q&A", results: true }
+      { n: "07", title: "總結與反思", num: 33 },
+      { n: "08", title: "投票結果 / Q&A", results: true }
     ];
     function renderTocBoard() {
       const board = document.getElementById("tocBoard");
@@ -1017,17 +1094,56 @@
     }
 
     function buildSlides() {
-      const built = SLIDE_NUMBERS.map((num) => {
-        const elements = [];
-        (SHAPES[num] || []).forEach((shapeItem, i) => { elements.push({ id: `s${num}-shape-${i}`, type: "shape", name: shapeItem.name || "色塊", x: shapeItem.x, y: shapeItem.y, w: shapeItem.w, h: shapeItem.h, bg: shapeItem.c }); });
-        (PLACEHOLDERS[num] || []).forEach((item, i) => { elements.push({ id: `s${num}-ph-${i}`, type: "placeholder", name: item.key, key: item.key, x: item.x, y: item.y, w: item.w, h: item.h, bg: "#d6484c", image: "" }); });
-        (TEXT_LAYERS[num] || []).forEach((item, i) => { elements.push({ id: `s${num}-text-${i}`, type: "text", name: "文字", text: item.value, x: item.x, y: item.y, w: item.w, h: item.h, size: item.size, weight: item.weight, color: item.color, bg: "transparent", lineHeight: item.lineHeight || 1.18 }); });
-        elements.push(...ocrElementsForSlide(num));
-        return { num, file: `assets/slides/${num}.jpg`, elements };
-      });
-      built.splice(1, 0, { num: "目錄", toc: true, elements: [] });
-      built.push({ num: "結果", results: true, elements: [] });
+      const built = SLIDE_NUMBERS.map(buildContentSlide);
+      built.splice(1, 0, createTocSlide());
+      built.push(createResultsSlide());
       return built;
+    }
+
+    function buildContentSlide(num) {
+      const elements = [];
+      (SHAPES[num] || []).forEach((shapeItem, i) => { elements.push({ id: `s${num}-shape-${i}`, type: "shape", name: shapeItem.name || "色塊", x: shapeItem.x, y: shapeItem.y, w: shapeItem.w, h: shapeItem.h, bg: shapeItem.c }); });
+      (PLACEHOLDERS[num] || []).forEach((item, i) => { elements.push(createPlaceholderElement(num, item, i)); });
+      (TEXT_LAYERS[num] || []).forEach((item, i) => { elements.push({ id: `s${num}-text-${i}`, type: "text", name: "文字", text: item.value, x: item.x, y: item.y, w: item.w, h: item.h, size: item.size, weight: item.weight, color: item.color, bg: "transparent", lineHeight: item.lineHeight || 1.18 }); });
+      elements.push(...ocrElementsForSlide(num));
+      return { num, file: `assets/slides/${num}.jpg`, elements };
+    }
+
+    function createTocSlide() {
+      return { num: "目錄", toc: true, elements: [] };
+    }
+
+    function createResultsSlide() {
+      return { num: RESULTS_SLIDE_NUM, results: true, elements: [] };
+    }
+
+    function createPlaceholderElement(num, item, index) {
+      return { id: `s${num}-ph-${index}`, type: "placeholder", name: item.key, key: item.key, x: item.x, y: item.y, w: item.w, h: item.h, bg: "#d6484c", image: "" };
+    }
+
+    function syncDefaultQrPlaceholder() {
+      const qrKey = "qrcode.png";
+      let changed = false;
+      slides.forEach((slide) => {
+        if (!slide || slide.toc || slide.results) return;
+        (PLACEHOLDERS[slide.num] || []).forEach((item, i) => {
+          if (item.key !== qrKey) return;
+          const id = `s${slide.num}-ph-${i}`;
+          const existing = slide.elements.find((el) => el.id === id);
+          if (!existing) {
+            slide.elements.push(createPlaceholderElement(slide.num, item, i));
+            changed = true;
+            return;
+          }
+          if (existing.type !== "placeholder" || existing.image) return;
+          if (!existing.key || ["QR.jpg", "QR.png", "qrcode"].includes(existing.key)) {
+            existing.key = qrKey;
+            existing.name = qrKey;
+            changed = true;
+          }
+        });
+      });
+      return changed;
     }
 
     function ocrElementsForSlide(num) {
@@ -1036,11 +1152,25 @@
 
     function mergeOcrTextIntoSlides() { slides.forEach((slide) => { slide.elements = slide.elements.filter((el) => el.source !== "ocr"); slide.elements.push(...ocrElementsForSlide(slide.num)); }); }
 
-    function renderSlideOptions() { slideSelect.innerHTML = ""; slides.forEach((slide, index) => { const option = document.createElement("option"); option.value = index; option.textContent = slide.toc ? "📑 目錄" : slide.results ? "📊 投票結果" : `第 ${slide.num} 頁`; slideSelect.appendChild(option); }); }
+    function slideDisplayLabel(slide) {
+      if (!slide) return "";
+      if (slide.toc) return "目錄";
+      const title = SLIDE_TITLES[slide.num];
+      return title ? `第 ${slide.num} 頁 · ${title}` : `第 ${slide.num} 頁`;
+    }
 
-    function renderDeckDots() { deckDots.innerHTML = ""; slides.forEach((slide, index) => { const dot = document.createElement("button"); dot.className = "deck-dot"; dot.type = "button"; dot.title = slide.toc ? "目錄" : slide.results ? "投票結果" : `第 ${slide.num} 頁`; dot.setAttribute("aria-label", slide.toc ? "切換到目錄" : slide.results ? "切換到投票結果" : `切換到第 ${slide.num} 頁`); dot.addEventListener("click", () => activateSlide(index)); deckDots.appendChild(dot); }); updateDeckChrome(); }
+    function slideIconLabel(slide) {
+      if (!slide) return "";
+      if (slide.toc) return "📑 目錄";
+      if (slide.results) return `📊 ${slideDisplayLabel(slide)}`;
+      return slideDisplayLabel(slide);
+    }
 
-    function updateDeckChrome() { const count = Math.max(1, slides.length); const slide = slides[current]; deckProgress.style.width = `${((current + 1) / count) * 100}%`; const label = slide ? (slide.toc ? "目錄" : slide.results ? "投票結果" : `第 ${slide.num} 頁`) : ""; deckCounter.textContent = slide ? `${String(current + 1).padStart(2, "0")} / ${count} · ${label}` : ""; [...deckDots.children].forEach((dot, index) => { dot.classList.toggle("on", index === current); dot.setAttribute("aria-current", index === current ? "true" : "false"); }); }
+    function renderSlideOptions() { slideSelect.innerHTML = ""; slides.forEach((slide, index) => { const option = document.createElement("option"); option.value = index; option.textContent = slideIconLabel(slide); slideSelect.appendChild(option); }); }
+
+    function renderDeckDots() { deckDots.innerHTML = ""; slides.forEach((slide, index) => { const dot = document.createElement("button"); dot.className = "deck-dot"; dot.type = "button"; const label = slideDisplayLabel(slide); dot.title = label; dot.setAttribute("aria-label", `切換到${label}`); dot.addEventListener("click", () => activateSlide(index)); deckDots.appendChild(dot); }); updateDeckChrome(); }
+
+    function updateDeckChrome() { const count = Math.max(1, slides.length); const slide = slides[current]; deckProgress.style.width = `${((current + 1) / count) * 100}%`; const label = slideDisplayLabel(slide); deckCounter.textContent = slide ? `${String(current + 1).padStart(2, "0")} / ${count} · ${label}` : ""; [...deckDots.children].forEach((dot, index) => { dot.classList.toggle("on", index === current); dot.setAttribute("aria-current", index === current ? "true" : "false"); }); }
 
     function renderSlides() { stage.innerHTML = ""; slides.forEach((slide, index) => { const slideEl = document.createElement("section"); slideEl.className = "slide"; slideEl.dataset.index = index; slideEl.dataset.slide = slide.num; if (slide.results) { slideEl.classList.add("results-slide"); const board = document.createElement("div"); board.className = "results-board"; board.id = "resultsBoard"; slideEl.appendChild(board); } else if (slide.toc) { slideEl.classList.add("toc-slide"); const board = document.createElement("div"); board.className = "toc-board"; board.id = "tocBoard"; slideEl.appendChild(board); } else { const bg = document.createElement("img"); bg.className = "slide-bg"; bg.src = slide.file; bg.alt = `第 ${slide.num} 頁`; slideEl.appendChild(bg); slide.elements.forEach((el) => slideEl.appendChild(createElementNode(el))); } stage.appendChild(slideEl); }); renderPresentationOverlays(); renderResultsBoard(); renderTocBoard(); }
 
@@ -1064,7 +1194,7 @@
       const corner = document.createElement("span"); corner.className = "resize-corner"; node.appendChild(corner); node.addEventListener("pointerdown", (event) => beginDrag(event, el, node)); node.addEventListener("dblclick", (event) => { event.stopPropagation(); selectElement(el.id); if (el.type === "placeholder") imageInput.click(); }); corner.addEventListener("pointerdown", (event) => beginResize(event, el, node)); return node;
     }
 
-    function loadPlaceholderImage(node, el) { const candidates = []; if (/\.(png|jpe?g|webp|gif)$/i.test(el.key)) { candidates.push(`assets/parts/${el.key}`); } else { ["jpg", "png", "jpeg", "webp"].forEach((ext) => candidates.push(`assets/parts/${el.key}.${ext}`)); } if (el.image) { showPlaceholderImage(node, el.image); return; } tryImage(node, candidates, 0); }
+    function loadPlaceholderImage(node, el) { const candidates = []; if (/\.(png|jpe?g|webp|gif)$/i.test(el.key)) { candidates.push(`assets/parts/${el.key}`); } else { const preferred = PART_ASSET_EXTENSIONS[el.key]; if (preferred) candidates.push(`assets/parts/${el.key}.${preferred}`); ["jpg", "png", "jpeg", "webp"].forEach((ext) => { const candidate = `assets/parts/${el.key}.${ext}`; if (!candidates.includes(candidate)) candidates.push(candidate); }); } if (el.image) { showPlaceholderImage(node, el.image); return; } tryImage(node, candidates, 0); }
     function tryImage(node, candidates, index) { if (index >= candidates.length) return; const img = new Image(); img.onload = () => showPlaceholderImage(node, candidates[index]); img.onerror = () => tryImage(node, candidates, index + 1); img.src = candidates[index]; }
     function showPlaceholderImage(node, src) { let img = node.querySelector("img"); if (!img) { img = document.createElement("img"); node.prepend(img); } img.src = src; node.classList.add("has-image"); }
 
@@ -1077,7 +1207,7 @@
       slideSelect.value = String(current); updateDeckChrome(); if (old !== target) clearInk(); selected = null; clearSpotlight(); refreshSelection(); closeActivities();
       set(ref(db, 'currentSlide'), current);
       const cs = slides[current];
-      set(ref(db, 'deckInfo'), { pos: current + 1, num: cs ? (cs.toc ? "📑 目錄" : cs.results ? "📊 投票結果" : cs.num) : current + 1, total: slides.length });
+      set(ref(db, 'deckInfo'), { pos: current + 1, num: cs ? slideIconLabel(cs) : current + 1, total: slides.length });
       if (cs && cs.results) animateResultsIn();
     }
 
@@ -1212,10 +1342,27 @@
     function clearQrPanel() { qrState = { url: "", image: "" }; document.getElementById("qrUrl").value = ""; saveQrPanel(); renderQrPreview(); }
     function renderQrPreview() { const preview = document.getElementById("qrPreview"); preview.innerHTML = ""; if (qrState.image) { const img = document.createElement("img"); img.src = qrState.image; img.alt = "互動 QR"; preview.appendChild(img); return; } const wrap = document.createElement("div"); wrap.className = "qr-link"; const mark = document.createElement("div"); mark.className = "qr-mark"; mark.textContent = "QR"; const text = document.createElement("strong"); text.textContent = qrState.url || "貼上互動連結或上傳 QR 圖"; wrap.append(mark, text); preview.appendChild(wrap); }
     function exportState() { const data = JSON.stringify({ version: 3, slides: slides.filter((s) => !s.results && !s.toc), qr: qrState }, null, 2); const blob = new Blob([data], { type: "application/json" }); const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "html-presentation-state.json"; link.click(); URL.revokeObjectURL(url); }
-    function importState(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = JSON.parse(reader.result); if (Array.isArray(imported.slides)) { slides = imported.slides; ensureResults(); if (imported.qr && typeof imported.qr === "object") { qrState = { url: imported.qr.url || "", image: imported.qr.image || "" }; document.getElementById("qrUrl").value = qrState.url; renderQrPreview(); saveQrPanel(); } renderSlides(); activateSlide(Math.min(current, slides.length - 1)); saveLocalState(); } } catch (error) { console.warn(error); } }; reader.readAsText(file); event.target.value = ""; }
-    function ensureResults() { const allowed = new Set(SLIDE_NUMBERS); slides = slides.filter((s) => s && !s.results && !s.toc && allowed.has(s.num)); slides.splice(Math.min(1, slides.length), 0, { num: "目錄", toc: true, elements: [] }); slides.push({ num: "結果", results: true, elements: [] }); }
+    function importState(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = () => { try { const imported = JSON.parse(reader.result); if (Array.isArray(imported.slides)) { slides = imported.slides; ensureResults(); syncDefaultQrPlaceholder(); if (imported.qr && typeof imported.qr === "object") { qrState = { url: imported.qr.url || "", image: imported.qr.image || "" }; document.getElementById("qrUrl").value = qrState.url; renderQrPreview(); saveQrPanel(); } renderSlides(); activateSlide(Math.min(current, slides.length - 1)); saveLocalState(); } } catch (error) { console.warn(error); } }; reader.readAsText(file); event.target.value = ""; }
+    function ensureResults() {
+      const allowed = new Set(SLIDE_NUMBERS);
+      const existing = new Map();
+      const previousNums = slides.filter((slide) => slide && !slide.results && !slide.toc).map((slide) => Number(slide.num)).join(",");
+      slides.forEach((slide) => {
+        const num = Number(slide?.num);
+        if (slide && !slide.results && !slide.toc && allowed.has(num) && !existing.has(num)) {
+          slide.num = num;
+          slide.file = slide.file || `assets/slides/${num}.jpg`;
+          slide.elements = Array.isArray(slide.elements) ? slide.elements : [];
+          existing.set(num, slide);
+        }
+      });
+      slides = SLIDE_NUMBERS.map((num) => existing.get(num) || buildContentSlide(num));
+      slides.splice(Math.min(1, slides.length), 0, createTocSlide());
+      slides.push(createResultsSlide());
+      return previousNums !== SLIDE_NUMBERS.join(",");
+    }
     function saveLocalState() { try { localStorage.setItem("editableHtmlDeckState_v3", JSON.stringify({ slides: slides.filter((s) => !s.results && !s.toc) })); } catch (error) { console.warn(error); } }
-    function restoreLocalState() { try { const saved = JSON.parse(localStorage.getItem("editableHtmlDeckState_v3") || "null"); if (saved && Array.isArray(saved.slides) && saved.slides.length >= 2) { slides = saved.slides; ensureResults(); mergeOcrTextIntoSlides(); renderSlides(); activateSlide(Math.min(current, slides.length - 1)); } } catch (error) { console.warn(error); } }
+    function restoreLocalState() { try { const saved = JSON.parse(localStorage.getItem("editableHtmlDeckState_v3") || "null"); if (saved && Array.isArray(saved.slides) && saved.slides.length >= 2) { slides = saved.slides; const structureChanged = ensureResults(); const qrChanged = syncDefaultQrPlaceholder(); mergeOcrTextIntoSlides(); renderSlides(); activateSlide(Math.min(current, slides.length - 1)); if (structureChanged || qrChanged) saveLocalState(); } } catch (error) { console.warn(error); } }
     function normalizeColor(value) { if (!value || value === "transparent") return "#ffffff"; if (/^#/.test(value)) return value; const match = value.match(/\d+/g); if (!match) return "#ffffff"; return "#" + match.slice(0, 3).map((n) => Number(n).toString(16).padStart(2, "0")).join(""); }
   </script>
 </body>

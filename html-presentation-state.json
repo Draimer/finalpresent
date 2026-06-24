@@ -18,8 +18,8 @@
         {
           "id": "s1-ph-0",
           "type": "placeholder",
-          "name": "QR.jpg",
-          "key": "QR.jpg",
+          "name": "qrcode.png",
+          "key": "qrcode.png",
           "x": 1332,
           "y": 574,
           "w": 446,
